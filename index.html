@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaybeSoumo</title>
+  <style>
+    body {
+      font-family: "proxima-nova-soft", sans-serif;
+      overflow: hidden;
+      background: linear-gradient(45deg, #000000, #330000);
+    }
+    .centered-box {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .loader {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .loader-line-mask {
+      position: absolute;
+      width: 60px;
+      height: 120px;
+      overflow: hidden;
+      transform-origin: 60px 60px;
+      mask-image: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+      animation: rotate 1.2s infinite linear;
+    }
+    .loader-line {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="particles" class="centered-box"></div>
+  <div class="centered-box">
+    <div class="loader">
+      <div class="loader-line-mask">
+        <div class="loader-line"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function ($, window, document, undefined) {
+      'use strict';
+      function Plugin(element, options) {
+        this.element = element;
+        this.$el = $(element);
+        this.options = $.extend({}, $.fn.particleground.defaults, options);
+        this.init();
+      }
+      Plugin.prototype.init = function () {
+        var _ = this;
+        if (!document.createElement('canvas').getContext) return;
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var particles = [];
+        var width = this.$el.width();
+        var height = this.$el.height();
+        canvas.width = width;
+        canvas.height = height;
+        this.$el.append(canvas);
+
+        function Particle() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * _.options.maxSpeedX;
+          this.vy = (Math.random() - 0.5) * _.options.maxSpeedY;
+          this.radius = Math.random() * _.options.sizeVariations + _.options.baseRadius;
+          this.color = _.options.color;
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          ctx.fillStyle = _.options.color;
+          particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > width) p.vx = -p.vx;
+            if (p.y < 0 || p.y > height) p.vy = -p.vy;
+          });
+          requestAnimationFrame(draw);
+        }
+        for (var i = 0; i < this.options.particleCount; i++) particles.push(new Particle());
+        draw();
+        $(window).on('resize', function () {
+          width = _.$el.width();
+          height = _.$el.height();
+          canvas.width = width;
+          canvas.height = height;
+          particles = [];
+          for (var i = 0; i < _.options.particleCount; i++) particles.push(new Particle());
+        });
+      };
+      $.fn.particleground = function (options) {
+        return this.each(function () {
+          if (!$.data(this, 'plugin_particleground')) {
+            $.data(this, 'plugin_particleground', new Plugin(this, options));
+          }
+        });
+      };
+      $.fn.particleground.defaults = {
+        particleCount: 100,
+        maxSpeedX: 0.5,
+        maxSpeedY: 0.5,
+        baseRadius: 2,
+        sizeVariations: 3,
+        color: '#ffffff'
+      };
+    })(jQuery, window, document);
+    $(document).ready(function () {
+      $('#particles').particleground({
+        particleCount: 150,
+        maxSpeedX: 1.0,
+        maxSpeedY: 1.0,
+        baseRadius: 3,
+        sizeVariations: 4,
+        color: '#ffffff'
+      });
+    });
+  </script>
+</body>
+</html>
